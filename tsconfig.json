@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "rootDirs": ["./src"],
+    "outDir": "./dist",
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2017",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "pretty": false,
+    "removeComments": true,
+    "stripInternal": true,
+    "allowJs": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
