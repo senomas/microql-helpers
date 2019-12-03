@@ -14,6 +14,4 @@ export interface CreateBaseResolverOption {
     orderByInput: any;
 }
 export declare const regexDupKey: RegExp;
-export interface IBaseResolver {
-}
-export declare function createBaseResolver(opt: CreateBaseResolverOption): IBaseResolver;
+export declare function createBaseResolver(opt: CreateBaseResolverOption): any;
