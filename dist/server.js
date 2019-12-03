@@ -51,105 +51,36 @@ async function bootstrap({ resolvers, init }) {
     await init();
     const data = fs.readdirSync(path.resolve("./dist/data"));
     data.sort();
-    const versionRow = (await mongodb_1.mongodb.db.collection("version").findOne({ code: "populate" }));
-    let version;
-    if (versionRow) {
-        version = versionRow.version;
-    }
-    else {
-        version = -1;
-        await mongodb_1.mongodb.db.collection("version").insertOne({
-            code: "populate",
-            version
-        });
-    }
-    let lcver = version;
-    let cver = version;
     const models = {};
     for (const fn of data) {
         const fns = fn.split(".");
-        const model = fns[2];
-        cver = parseInt(fns[0], 10);
-        if (cver <= version) {
-            config_1.logger.info({ model, cver, version, fileName: fn }, "skip");
-        }
-        else {
-            if (lcver < 900 && cver !== lcver) {
-                if (cver > 0 && lcver > version) {
-                    const ures = await mongodb_1.mongodb.db.collection("version").updateOne({
-                        code: "populate",
-                        version
-                    }, {
-                        $set: {
-                            version: lcver
-                        }
-                    }, { upsert: true });
-                    if (ures.modifiedCount !== 1) {
-                        delete ures.connection;
-                        delete ures.message;
-                        throw {
-                            name: "UpdateError",
-                            version,
-                            cver,
-                            lcver,
-                            ures
-                        };
-                    }
-                    version = lcver;
+        const model = fns[1];
+        if (config_1.NODE_ENV === "development" || config_1.NODE_ENV === "test") {
+            if (!models[model]) {
+                try {
+                    await mongodb_1.mongodb.db.collection(model).drop();
                 }
-                lcver = cver;
-            }
-            if (config_1.NODE_ENV === "development" || config_1.NODE_ENV === "test") {
-                if (!models[model]) {
-                    try {
-                        await mongodb_1.mongodb.db.collection(model).drop();
+                catch (err) {
+                    if (err.message && err.message.indexOf("ns not found") >= 0) {
                     }
-                    catch (err) {
-                        if (err.message && err.message.indexOf("ns not found") >= 0) {
-                        }
-                        else {
-                            throw err;
-                        }
+                    else {
+                        throw err;
                     }
-                    models[model] = true;
                 }
+                models[model] = true;
             }
-            if (fn.endsWith(".js")) {
-                const cfn = `./data/${fn.slice(0, -3)}`;
-                config_1.logger.info({ model, cver, fileName: cfn }, "import script");
-                await require(cfn)({ mongodb: mongodb_1.mongodb });
-            }
-            else if (fn.endsWith(".json")) {
-                config_1.logger.info({ model, cver, fileName: fn }, "load data");
-                const pdata = JSON.parse(fs.readFileSync(path.resolve("dist", "data", fn)).toString());
-                const res = await mongodb_1.mongodb.models[model].load(pdata);
-                config_1.logger.info({ model, cver, fileName: fn, res }, "load data res");
-            }
-            config_1.logger.info({ version, cver, lcver }, "after update");
         }
-    }
-    config_1.logger.info({ cver, version }, "after updates");
-    if (cver < 900 && cver !== version) {
-        const ures = await mongodb_1.mongodb.db.collection("version").updateOne({
-            code: "populate",
-            version
-        }, {
-            $set: {
-                version: cver
-            }
-        }, { upsert: true });
-        if (ures.modifiedCount !== 1) {
-            delete ures.connection;
-            delete ures.message;
-            throw {
-                name: "UpdateError",
-                version,
-                lcver,
-                cver,
-                ures
-            };
+        if (fn.endsWith(".js")) {
+            const cfn = path.resolve("dist", "data", fn.slice(0, -3));
+            config_1.logger.info({ model, fileName: cfn }, "import script");
+            await require(cfn)({ mongodb: mongodb_1.mongodb });
         }
-        version = cver;
+        else if (fn.endsWith(".json")) {
+            config_1.logger.info({ model, fileName: fn }, "load data");
+            const pdata = JSON.parse(fs.readFileSync(path.resolve("dist", "data", fn)).toString());
+            const res = await mongodb_1.mongodb.models[model].load(pdata);
+            config_1.logger.info({ model, fileName: fn, res }, "load data res");
+        }
     }
     const server = new apollo_server_express_1.ApolloServer({
         schema,

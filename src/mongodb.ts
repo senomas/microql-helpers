@@ -98,13 +98,6 @@ export class Mongodb {
         unique: true
       }
     );
-    const version = this.db.collection("version");
-    await version.createIndex(
-      { code: 1 },
-      {
-        unique: true
-      }
-    );
   }
 
   public async create(name, options = null) {

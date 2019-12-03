@@ -59,101 +59,34 @@ export async function bootstrap(
 
   const data = fs.readdirSync(path.resolve("./dist/data"));
   data.sort();
-  const versionRow = (await mongodb.db.collection("version").findOne({ code: "populate" }));
-  let version;
-  if (versionRow) {
-    version = versionRow.version;
-  } else {
-    version = -1;
-    await mongodb.db.collection("version").insertOne({
-      code: "populate",
-      version
-    });
-  }
-  let lcver = version;
-  let cver = version;
   const models = {};
   for (const fn of data) {
     const fns = fn.split(".");
-    const model = fns[2];
-    cver = parseInt(fns[0], 10);
-    if (cver <= version) {
-      logger.info({ model, cver, version, fileName: fn }, "skip");
-    } else {
-      if (lcver < 900 && cver !== lcver) {
-        if (cver > 0 && lcver > version) {
-          const ures = await mongodb.db.collection("version").updateOne({
-            code: "populate",
-            version
-          }, {
-            $set: {
-              version: lcver
-            }
-          }, { upsert: true });
-          if (ures.modifiedCount !== 1) {
-            delete ures.connection;
-            delete ures.message;
-            throw {
-              name: "UpdateError",
-              version,
-              cver,
-              lcver,
-              ures
-            };
+    const model = fns[1];
+    if (NODE_ENV === "development" || NODE_ENV === "test") {
+      if (!models[model]) {
+        try {
+          await mongodb.db.collection(model).drop();
+        } catch (err) {
+          if (err.message && err.message.indexOf("ns not found") >= 0) {
+            // skip
+          } else {
+            throw err;
           }
-          version = lcver;
         }
-        lcver = cver;
+        models[model] = true;
       }
-      if (NODE_ENV === "development" || NODE_ENV === "test") {
-        if (!models[model]) {
-          try {
-            await mongodb.db.collection(model).drop();
-          } catch (err) {
-            if (err.message && err.message.indexOf("ns not found") >= 0) {
-              // skip
-            } else {
-              throw err;
-            }
-          }
-          models[model] = true;
-        }
-      }
-      if (fn.endsWith(".js")) {
-        const cfn = `./data/${fn.slice(0, -3)}`;
-        logger.info({ model, cver, fileName: cfn }, "import script");
-        await require(cfn)({ mongodb });
-      } else if (fn.endsWith(".json")) {
-        logger.info({ model, cver, fileName: fn }, "load data");
-        const pdata = JSON.parse(fs.readFileSync(path.resolve("dist", "data", fn)).toString());
-        const res = await mongodb.models[model].load(pdata);
-        logger.info({ model, cver, fileName: fn, res }, "load data res");
-      }
-      logger.info({ version, cver, lcver }, "after update");
     }
-  }
-  logger.info({ cver, version }, "after updates");
-  if (cver < 900 && cver !== version) {
-    const ures = await mongodb.db.collection("version").updateOne({
-      code: "populate",
-      version
-    }, {
-      $set: {
-        version: cver
-      }
-    }, { upsert: true });
-    if (ures.modifiedCount !== 1) {
-      delete ures.connection;
-      delete ures.message;
-      throw {
-        name: "UpdateError",
-        version,
-        lcver,
-        cver,
-        ures
-      };
+    if (fn.endsWith(".js")) {
+      const cfn = path.resolve("dist", "data", fn.slice(0, -3));
+      logger.info({ model, fileName: cfn }, "import script");
+      await require(cfn)({ mongodb });
+    } else if (fn.endsWith(".json")) {
+      logger.info({ model, fileName: fn }, "load data");
+      const pdata = JSON.parse(fs.readFileSync(path.resolve("dist", "data", fn)).toString());
+      const res = await mongodb.models[model].load(pdata);
+      logger.info({ model, fileName: fn, res }, "load data res");
     }
-    version = cver;
   }
 
   const server = new ApolloServer({

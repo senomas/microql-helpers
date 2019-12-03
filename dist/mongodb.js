@@ -73,10 +73,6 @@ class Mongodb {
         await sequence.createIndex({ key: 1, time: 1 }, {
             unique: true
         });
-        const version = this.db.collection("version");
-        await version.createIndex({ code: 1 }, {
-            unique: true
-        });
     }
     async create(name, options = null) {
         const col = this.db.collection(name);
