@@ -56,38 +56,11 @@ async function parseToken(ctx, token) {
     }
     catch (err) {
         config_1.logger.error({ header, token, err }, "parse-token");
-        if (err && err.name === "TokenExpiredError") {
-            const pkey = config_1.config.keys.auth.pkey;
-            if (pkey) {
-                const user = jwt.decode(token);
-                user.token = await svc.refresh(token);
-                if (!user.token) {
-                    config_1.logger.error({ keyid, key, user }, "refresh-token");
-                    ctx.errors.push({
-                        path: "auth.refresh",
-                        name: "InvalidToken",
-                        value: JSON.stringify({ token })
-                    });
-                    return null;
-                }
-                else if (user.token.error) {
-                    config_1.logger.error({ keyid, key, user }, "refresh-token");
-                    ctx.errors.push({
-                        path: "auth.refresh",
-                        name: "ForbiddenError",
-                        value: JSON.stringify({ token })
-                    });
-                    return null;
-                }
-                else if (!user.token.token) {
-                    config_1.logger.error({ keyid, key, user }, "refresh-token");
-                    ctx.errors.push({
-                        path: "auth.refresh",
-                        name: "InvalidToken",
-                        value: JSON.stringify({ token })
-                    });
-                    return null;
-                }
+        if (err && err.name === "TokenExpiredError" && ctx.refreshToken) {
+            const user = jwt.decode(token);
+            user.token = await ctx.refreshToken(user, token);
+            if (user.token) {
+                return user;
             }
         }
         ctx.errors.push({
