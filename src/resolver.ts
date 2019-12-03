@@ -24,7 +24,9 @@ export interface CreateBaseResolverOption {
 
 export const regexDupKey = /^E11000 duplicate key error collection: (\w+\.\w+) index: (\w+) dup key: (.+)$/;
 
-export function createBaseResolver(opt: CreateBaseResolverOption) {
+export interface IBaseResolver {}
+
+export function createBaseResolver(opt: CreateBaseResolverOption): IBaseResolver {
   if (!opt.suffixPlurals) {
     opt.suffixPlurals = `${opt.suffix}s`;
   }
@@ -36,7 +38,7 @@ export function createBaseResolver(opt: CreateBaseResolverOption) {
   }
 
   @Resolver({ isAbstract: true })
-  abstract class BaseResolver {
+  abstract class BaseResolver implements IBaseResolver {
     protected queryFilters: any = opt.queryFilters || {
       skip: () => {
         // nop
@@ -208,3 +210,4 @@ export function createBaseResolver(opt: CreateBaseResolverOption) {
 
   return BaseResolver;
 }
+

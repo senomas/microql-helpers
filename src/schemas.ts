@@ -1,6 +1,6 @@
 import { ClassType, Field, Int, ObjectType, registerEnumType, ID } from "type-graphql";
 
-export function Partial<TItem>(TItemClass: ClassType<TItem>) {
+export function Partial<TItem>(TItemClass: ClassType<TItem>): any {
 
   @ObjectType({ isAbstract: true })
   abstract class PartialClass {
