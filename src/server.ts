@@ -44,7 +44,7 @@ export async function bootstrap(
   }: {
     resolvers?: any,
     init?: () => void,
-    context?: (any) => any
+    context?: (any) => void
   }
 ) {
   const schema = await buildFederatedSchema({
@@ -101,11 +101,14 @@ export async function bootstrap(
       return err;
     },
     context: async ({ req }) => {
-      const errors = [];
-      const user = await getUser({ errors }, req);
       const remoteAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-      const ctx = { user, headers: req.headers, remoteAddress, errors };
-      return context ? await context(ctx) : ctx;
+      const errors = [];
+      const ctx: any = { headers: req.headers, remoteAddress };
+      ctx.user = await getUser({ ctx, errors }, req);
+      if (context) {
+        await context(ctx);
+      }
+      return ctx;
     },
     extensions: [() => {
       return new BasicLogging();

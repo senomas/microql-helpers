@@ -92,11 +92,14 @@ async function bootstrap({ resolvers, init, context }) {
             return err;
         },
         context: async ({ req }) => {
-            const errors = [];
-            const user = await authentication_1.getUser({ errors }, req);
             const remoteAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-            const ctx = { user, headers: req.headers, remoteAddress, errors };
-            return context ? await context(ctx) : ctx;
+            const errors = [];
+            const ctx = { headers: req.headers, remoteAddress };
+            ctx.user = await authentication_1.getUser({ ctx, errors }, req);
+            if (context) {
+                await context(ctx);
+            }
+            return ctx;
         },
         extensions: [() => {
                 return new BasicLogging();
