@@ -103,8 +103,8 @@ export async function bootstrap(
     context: async ({ req }) => {
       const remoteAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
       const errors = [];
-      const ctx: any = { headers: req.headers, remoteAddress };
-      ctx.user = await getUser({ ctx, errors }, req);
+      const ctx: any = { headers: req.headers, remoteAddress, errors };
+      ctx.user = await getUser(ctx, req);
       if (context) {
         await context(ctx);
       }
