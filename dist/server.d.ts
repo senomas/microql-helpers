@@ -7,7 +7,8 @@ export declare class BasicLogging extends GraphQLExtension {
         graphqlResponse: any;
     }): void;
 }
-export declare function bootstrap({ resolvers, init }: {
-    resolvers: any;
-    init: () => void;
+export declare function bootstrap({ resolvers, init, context }: {
+    resolvers?: any;
+    init?: () => void;
+    context?: (any: any) => any;
 }): Promise<void>;

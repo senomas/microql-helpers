@@ -39,10 +39,12 @@ export class BasicLogging extends GraphQLExtension {
 export async function bootstrap(
   {
     resolvers,
-    init
+    init,
+    context
   }: {
-    resolvers: any,
-    init: () => void
+    resolvers?: any,
+    init?: () => void,
+    context?: (any) => any
   }
 ) {
   const schema = await buildFederatedSchema({
@@ -102,7 +104,8 @@ export async function bootstrap(
       const errors = [];
       const user = await getUser({ errors }, req);
       const remoteAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-      return { user, headers: req.headers, remoteAddress, errors };
+      const ctx = { user, headers: req.headers, remoteAddress, errors };
+      return context ? await context(ctx) : ctx;
     },
     extensions: [() => {
       return new BasicLogging();

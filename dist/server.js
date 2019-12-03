@@ -38,7 +38,7 @@ class BasicLogging extends apollo_server_express_1.GraphQLExtension {
     }
 }
 exports.BasicLogging = BasicLogging;
-async function bootstrap({ resolvers, init }) {
+async function bootstrap({ resolvers, init, context }) {
     const schema = await buildFederatedSchema_1.buildFederatedSchema({
         resolvers,
         authChecker: authorization_1.customAuthChecker,
@@ -95,7 +95,8 @@ async function bootstrap({ resolvers, init }) {
             const errors = [];
             const user = await authentication_1.getUser({ errors }, req);
             const remoteAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-            return { user, headers: req.headers, remoteAddress, errors };
+            const ctx = { user, headers: req.headers, remoteAddress, errors };
+            return context ? await context(ctx) : ctx;
         },
         extensions: [() => {
                 return new BasicLogging();
