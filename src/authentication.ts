@@ -54,7 +54,7 @@ export async function parseToken(ctx, token) {
         return user;
       }
     }
-    logger.error({ header, token, err, ename: err.name, rt: !!ctx.refreshToken }, "parse-token");
+    logger.error({ header, token, err, ename: err.name, ctx: Object.keys(ctx) }, "parse-token");
     ctx.errors.push({
       path: "auth.parseToken",
       name: err.name || "InvalidToken",

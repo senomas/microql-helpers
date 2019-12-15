@@ -62,7 +62,7 @@ async function parseToken(ctx, token) {
                 return user;
             }
         }
-        config_1.logger.error({ header, token, err, ename: err.name, rt: !!ctx.refreshToken }, "parse-token");
+        config_1.logger.error({ header, token, err, ename: err.name, ctx: Object.keys(ctx) }, "parse-token");
         ctx.errors.push({
             path: "auth.parseToken",
             name: err.name || "InvalidToken",
