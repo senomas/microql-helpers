@@ -47,7 +47,7 @@ export async function parseToken(ctx, token) {
   try {
     return jwt.verify(token, key);
   } catch (err) {
-    logger.error({ header, token, err }, "parse-token");
+    logger.error({ header, token, err, xe: { name: err.name } }, "parse-token");
     if (err && err.name === "TokenExpiredError" && ctx.refreshToken) {
       try {
         const user = jwt.decode(token);
