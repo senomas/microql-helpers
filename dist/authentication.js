@@ -55,25 +55,14 @@ async function parseToken(ctx, token) {
         return jwt.verify(token, key);
     }
     catch (err) {
-        config_1.logger.error({ header, token, err, xe: { name: err.name } }, "parse-token");
         if (err && err.name === "TokenExpiredError" && ctx.refreshToken) {
-            try {
-                const user = jwt.decode(token);
-                user.token = await ctx.refreshToken(ctx, keyid, key, user, token);
-                if (user.token) {
-                    return user;
-                }
-            }
-            catch (err) {
-                config_1.logger.warn({ token, err }, "refresh-token");
-                ctx.errors.push({
-                    path: "auth.refreshToken",
-                    name: err.name || "InvalidToken",
-                    value: JSON.stringify({ token })
-                });
-                return null;
+            const user = jwt.decode(token);
+            user.token = await ctx.refreshToken(ctx, keyid, key, user, token);
+            if (user.token) {
+                return user;
             }
         }
+        config_1.logger.error({ header, token, err }, "parse-token");
         ctx.errors.push({
             path: "auth.parseToken",
             name: err.name || "InvalidToken",
