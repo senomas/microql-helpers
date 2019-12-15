@@ -15,9 +15,9 @@ export declare class ServerInfo {
     errors?: Error[];
 }
 export declare class Error {
-    path: string;
-    name: string;
-    value: string;
+    path?: string;
+    name?: string;
+    value?: string;
 }
 export declare enum OrderByType {
     asc = "asc",

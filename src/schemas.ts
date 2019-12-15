@@ -52,13 +52,13 @@ export class ServerInfo {
 @ObjectType()
 export class Error {
   @Field({ nullable: true })
-  public path: string;
+  public path?: string;
 
   @Field({ nullable: true })
-  public name: string;
+  public name?: string;
 
   @Field({ nullable: true })
-  public value: string;
+  public value?: string;
 }
 
 export enum OrderByType {
