@@ -30,6 +30,7 @@ exports.LoggerResolverMiddleware = async ({ context, info, args }, next) => {
     const t1 = process.hrtime(t0);
     const end = new Date();
     config_1.logger.info({
+        context,
         graphql: {
             path: context.path,
             [`args_${info.parentType.name}_${info.fieldName}`]: args,
