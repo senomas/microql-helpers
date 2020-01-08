@@ -21,6 +21,7 @@ async function getUser(ctx, req) {
         if (token.startsWith("Bearer ")) {
             token = token.slice(7, token.length);
         }
+        ctx.token = token;
         return await parseToken(ctx, token);
     }
     return null;
