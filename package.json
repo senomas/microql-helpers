@@ -6,10 +6,6 @@
   "repository": "https://github.com/senomas/microql-helpers.git",
   "author": "denmaseno <agus@senomas.com>",
   "license": "MIT",
-  "engines": {
-    "node": "12.14.1",
-    "yarn": "1.21.1"
-  },
   "scripts": {
     "fix": "npx tslint --fix --project .",
     "build": "yarn fix && npx tsc"
