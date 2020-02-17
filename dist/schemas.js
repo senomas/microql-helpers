@@ -27,23 +27,23 @@ function Partial(TItemClass) {
     return PartialClass;
 }
 exports.Partial = Partial;
-function CreateReturn(TItemClass) {
-    let CreateReturnClass = class CreateReturnClass {
+function CreateUpdateResult(TItemClass) {
+    let CreateUpdateResultClass = class CreateUpdateResultClass {
     };
     __decorate([
         type_graphql_1.Field(type => TItemClass, { nullable: true }),
         __metadata("design:type", Object)
-    ], CreateReturnClass.prototype, "item", void 0);
+    ], CreateUpdateResultClass.prototype, "item", void 0);
     __decorate([
         type_graphql_1.Field(type => [Error], { nullable: true }),
         __metadata("design:type", Array)
-    ], CreateReturnClass.prototype, "errors", void 0);
-    CreateReturnClass = __decorate([
+    ], CreateUpdateResultClass.prototype, "errors", void 0);
+    CreateUpdateResultClass = __decorate([
         type_graphql_1.ObjectType({ isAbstract: true })
-    ], CreateReturnClass);
-    return CreateReturnClass;
+    ], CreateUpdateResultClass);
+    return CreateUpdateResultClass;
 }
-exports.CreateReturn = CreateReturn;
+exports.CreateUpdateResult = CreateUpdateResult;
 let Commit = class Commit {
 };
 __decorate([

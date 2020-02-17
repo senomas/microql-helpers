@@ -13,17 +13,17 @@ export function Partial<TItem>(TItemClass: ClassType<TItem>): any {
   return PartialClass;
 }
 
-export function CreateReturn<TItem>(TItemClass: ClassType<TItem>): any {
+export function CreateUpdateResult<TItem>(TItemClass: ClassType<TItem>): any {
 
   @ObjectType({ isAbstract: true })
-  abstract class CreateReturnClass {
+  abstract class CreateUpdateResultClass {
     @Field(type => TItemClass, { nullable: true })
     public item?: TItem;
 
     @Field(type => [Error], { nullable: true })
     public errors?: Error[];
   }
-  return CreateReturnClass;
+  return CreateUpdateResultClass;
 }
 
 @ObjectType()
