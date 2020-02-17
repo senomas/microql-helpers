@@ -27,6 +27,23 @@ function Partial(TItemClass) {
     return PartialClass;
 }
 exports.Partial = Partial;
+function CreateReturn(TItemClass) {
+    let CreateReturnClass = class CreateReturnClass {
+    };
+    __decorate([
+        type_graphql_1.Field(type => TItemClass, { nullable: true }),
+        __metadata("design:type", Object)
+    ], CreateReturnClass.prototype, "item", void 0);
+    __decorate([
+        type_graphql_1.Field(type => [Error], { nullable: true }),
+        __metadata("design:type", Array)
+    ], CreateReturnClass.prototype, "errors", void 0);
+    CreateReturnClass = __decorate([
+        type_graphql_1.ObjectType({ isAbstract: true })
+    ], CreateReturnClass);
+    return CreateReturnClass;
+}
+exports.CreateReturn = CreateReturn;
 let Commit = class Commit {
 };
 __decorate([

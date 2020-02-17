@@ -13,6 +13,19 @@ export function Partial<TItem>(TItemClass: ClassType<TItem>): any {
   return PartialClass;
 }
 
+export function CreateReturn<TItem>(TItemClass: ClassType<TItem>): any {
+
+  @ObjectType({ isAbstract: true })
+  abstract class CreateReturnClass {
+    @Field(type => TItemClass, { nullable: true })
+    public item?: TItem;
+
+    @Field(type => [Error], { nullable: true })
+    public errors?: Error[];
+  }
+  return CreateReturnClass;
+}
+
 @ObjectType()
 export class Commit {
   @Field()

@@ -1,5 +1,6 @@
 import { ClassType } from "type-graphql";
 export declare function Partial<TItem>(TItemClass: ClassType<TItem>): any;
+export declare function CreateReturn<TItem>(TItemClass: ClassType<TItem>): any;
 export declare class Commit {
     hash: string;
     abbrevHash: string;
