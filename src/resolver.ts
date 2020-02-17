@@ -1,10 +1,13 @@
+import { fieldsList } from 'graphql-fields-list';
 import { ObjectID } from 'mongodb';
-import { Arg, Authorized, ID, Int, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
+import {
+    Arg, Authorized, Ctx, ID, Info, Int, Mutation, Query, Resolver, UseMiddleware
+} from 'type-graphql';
 
+import { logger } from './config';
 import { LoggerResolverMiddleware } from './logger';
 import { mongodb } from './mongodb';
-import { logger } from './config';
-import { UpdateResponse, OrderByType, DeleteResponse } from './schemas';
+import { DeleteResponse, OrderByType, UpdateResponse } from './schemas';
 
 export interface CreateBaseResolverOption {
   suffix: string;
@@ -16,6 +19,7 @@ export interface CreateBaseResolverOption {
   queryFilters?: null;
   typeCls;
   partialTypeCls;
+  createTypeCls;
   createInput;
   updateInput;
   filterInput;
@@ -46,21 +50,37 @@ export function createBaseResolver(opt: CreateBaseResolverOption): any {
       }
     };
 
-    protected async _create(data) {
+    protected async _create({ ctx, info }, data) {
       // FIXME delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       try {
         const res = await mongodb.models[opt.suffix].insertOne(data);
-        logger.info({ res, data }, `insert ${opt.suffix}`);
-        return {
-          id: res.insertedId
-        };
+        const fields = fieldsList(info, { path: "item" });
+        logger.info({
+          res: {
+            result: res.result,
+            insertedCount: res.insertedCount,
+            insertedId: res.insertedId
+          }, data, fields
+        }, `insert ${opt.suffix}`);
+        if (fields.length === 1 && fields[0] === "id") {
+          return {
+            item: {
+              id: res.insertedId
+            }
+          };
+        }
+        const item = await mongodb.models[opt.suffix].findOne({ _id: new ObjectID(res.insertedId) });
+        if (item) {
+          item.id = item._id;
+        }
+        return { item };
       } catch (err) {
         if (err && err.message) {
           const m = regexDupKey.exec(err.message);
           if (m && m.length === 4) {
             return {
-              errors: {
+              errors: [{
                 path: "",
                 name: "DuplicateEntryError",
                 value: JSON.stringify({
@@ -68,12 +88,12 @@ export function createBaseResolver(opt: CreateBaseResolverOption): any {
                   index: m[2],
                   value: m[3]
                 })
-              }
+              }]
             };
           }
         }
         return {
-          errors: {
+          errors: [{
             path: "",
             name: "MongoError",
             value: JSON.stringify({
@@ -81,7 +101,7 @@ export function createBaseResolver(opt: CreateBaseResolverOption): any {
               message: err.message,
               stack: err.stack
             })
-          }
+          }]
         };
       }
     }
@@ -157,11 +177,11 @@ export function createBaseResolver(opt: CreateBaseResolverOption): any {
       };
     }
 
-    @Mutation(returns => opt.typeCls, { name: `create${opt.suffixCreate || opt.suffixCapitalize}` })
+    @Mutation(returns => opt.createTypeCls, { name: `create${opt.suffixCreate || opt.suffixCapitalize}` })
     @Authorized([`${opt.suffix}.create`])
     @UseMiddleware(LoggerResolverMiddleware)
-    public async create(@Arg("data", of => opt.createInput) data) {
-      return await this._create(data);
+    public async create(@Ctx() ctx, @Info() info, @Arg("data", of => opt.createInput) data) {
+      return await this._create({ ctx, info }, data);
     }
 
     @Mutation(returns => UpdateResponse, { name: `update${opt.suffixUpdate || opt.suffixCapitalizePlurals}` })

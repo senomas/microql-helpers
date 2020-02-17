@@ -12,11 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const graphql_fields_list_1 = require("graphql-fields-list");
 const mongodb_1 = require("mongodb");
 const type_graphql_1 = require("type-graphql");
+const config_1 = require("./config");
 const logger_1 = require("./logger");
 const mongodb_2 = require("./mongodb");
-const config_1 = require("./config");
 const schemas_1 = require("./schemas");
 exports.regexDupKey = /^E11000 duplicate key error collection: (\w+\.\w+) index: (\w+) dup key: (.+)$/;
 function createBaseResolver(opt) {
@@ -38,42 +39,58 @@ function createBaseResolver(opt) {
                 }
             };
         }
-        async _create(data) {
+        async _create({ ctx, info }, data) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             try {
                 const res = await mongodb_2.mongodb.models[opt.suffix].insertOne(data);
-                config_1.logger.info({ res, data }, `insert ${opt.suffix}`);
-                return {
-                    id: res.insertedId
-                };
+                const fields = graphql_fields_list_1.fieldsList(info, { path: "item" });
+                config_1.logger.info({
+                    res: {
+                        result: res.result,
+                        insertedCount: res.insertedCount,
+                        insertedId: res.insertedId
+                    }, data, fields
+                }, `insert ${opt.suffix}`);
+                if (fields.length === 1 && fields[0] === "id") {
+                    return {
+                        item: {
+                            id: res.insertedId
+                        }
+                    };
+                }
+                const item = await mongodb_2.mongodb.models[opt.suffix].findOne({ _id: new mongodb_1.ObjectID(res.insertedId) });
+                if (item) {
+                    item.id = item._id;
+                }
+                return { item };
             }
             catch (err) {
                 if (err && err.message) {
                     const m = exports.regexDupKey.exec(err.message);
                     if (m && m.length === 4) {
                         return {
-                            errors: {
-                                path: "",
-                                name: "DuplicateEntryError",
-                                value: JSON.stringify({
-                                    model: m[1],
-                                    index: m[2],
-                                    value: m[3]
-                                })
-                            }
+                            errors: [{
+                                    path: "",
+                                    name: "DuplicateEntryError",
+                                    value: JSON.stringify({
+                                        model: m[1],
+                                        index: m[2],
+                                        value: m[3]
+                                    })
+                                }]
                         };
                     }
                 }
                 return {
-                    errors: {
-                        path: "",
-                        name: "MongoError",
-                        value: JSON.stringify({
-                            name: err.name,
-                            message: err.message,
-                            stack: err.stack
-                        })
-                    }
+                    errors: [{
+                            path: "",
+                            name: "MongoError",
+                            value: JSON.stringify({
+                                name: err.name,
+                                message: err.message,
+                                stack: err.stack
+                            })
+                        }]
                 };
             }
         }
@@ -131,8 +148,8 @@ function createBaseResolver(opt) {
                 items
             };
         }
-        async create(data) {
-            return await this._create(data);
+        async create(ctx, info, data) {
+            return await this._create({ ctx, info }, data);
         }
         async update(filter, data) {
             return this._update(filter, data);
@@ -187,12 +204,12 @@ function createBaseResolver(opt) {
         __metadata("design:returntype", Promise)
     ], BaseResolver.prototype, "find", null);
     __decorate([
-        type_graphql_1.Mutation(returns => opt.typeCls, { name: `create${opt.suffixCreate || opt.suffixCapitalize}` }),
+        type_graphql_1.Mutation(returns => opt.createTypeCls, { name: `create${opt.suffixCreate || opt.suffixCapitalize}` }),
         type_graphql_1.Authorized([`${opt.suffix}.create`]),
         type_graphql_1.UseMiddleware(logger_1.LoggerResolverMiddleware),
-        __param(0, type_graphql_1.Arg("data", of => opt.createInput)),
+        __param(0, type_graphql_1.Ctx()), __param(1, type_graphql_1.Info()), __param(2, type_graphql_1.Arg("data", of => opt.createInput)),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
+        __metadata("design:paramtypes", [Object, Object, Object]),
         __metadata("design:returntype", Promise)
     ], BaseResolver.prototype, "create", null);
     __decorate([

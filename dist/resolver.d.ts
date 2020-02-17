@@ -8,6 +8,7 @@ export interface CreateBaseResolverOption {
     queryFilters?: null;
     typeCls: any;
     partialTypeCls: any;
+    createTypeCls: any;
     createInput: any;
     updateInput: any;
     filterInput: any;
