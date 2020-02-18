@@ -10,7 +10,6 @@ import { customAuthChecker } from './authorization';
 import { buildFederatedSchema } from './buildFederatedSchema';
 import { config, logger, NODE_ENV } from './config';
 import { LoggerMiddleware } from './logger';
-import { mongodb } from './mongodb';
 
 export class BasicLogging extends GraphQLExtension {
   public requestDidStart(o) {
@@ -56,40 +55,7 @@ export async function bootstrap(
     dateScalarMode: "isoDate"
   });
 
-  await mongodb.init(config);
   await init();
-
-  const data = fs.readdirSync(path.resolve("./dist/data"));
-  data.sort();
-  const models = {};
-  for (const fn of data) {
-    const fns = fn.split(".");
-    const model = fns[1];
-    if (NODE_ENV === "development" || NODE_ENV === "test") {
-      if (!models[model]) {
-        try {
-          await mongodb.db.collection(model).drop();
-        } catch (err) {
-          if (err.message && err.message.indexOf("ns not found") >= 0) {
-            // skip
-          } else {
-            throw err;
-          }
-        }
-        models[model] = true;
-      }
-    }
-    if (fn.endsWith(".js")) {
-      const cfn = path.resolve("dist", "data", fn.slice(0, -3));
-      logger.info({ model, fileName: cfn }, "import script");
-      await require(cfn)({ mongodb });
-    } else if (fn.endsWith(".json")) {
-      logger.info({ model, fileName: fn }, "load data");
-      const pdata = JSON.parse(fs.readFileSync(path.resolve("dist", "data", fn)).toString());
-      const res = await mongodb.models[model].load(pdata);
-      logger.info({ model, fileName: fn, res }, "load data res");
-    }
-  }
 
   const server = new ApolloServer({
     schema,

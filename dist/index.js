@@ -9,7 +9,5 @@ __export(require("./logger"));
 __export(require("./authentication"));
 __export(require("./authorization"));
 __export(require("./buildFederatedSchema"));
-__export(require("./mongodb"));
-__export(require("./resolver"));
 __export(require("./schemas"));
 //# sourceMappingURL=index.js.map

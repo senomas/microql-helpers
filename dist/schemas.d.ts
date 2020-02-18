@@ -1,6 +1,3 @@
-import { ClassType } from "type-graphql";
-export declare function Partial<TItem>(TItemClass: ClassType<TItem>): any;
-export declare function CreateUpdateResult<TItem>(TItemClass: ClassType<TItem>): any;
 export declare class Commit {
     hash: string;
     abbrevHash: string;
@@ -23,10 +20,6 @@ export declare class Error {
 export declare enum OrderByType {
     asc = "asc",
     desc = "desc"
-}
-export declare class CreateResponse {
-    id?: string;
-    errors?: Error[];
 }
 export declare class UpdateResponse {
     matched: number;

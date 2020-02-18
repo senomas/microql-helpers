@@ -10,40 +10,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const type_graphql_1 = require("type-graphql");
-function Partial(TItemClass) {
-    let PartialClass = class PartialClass {
-    };
-    __decorate([
-        type_graphql_1.Field(type => [TItemClass]),
-        __metadata("design:type", Array)
-    ], PartialClass.prototype, "items", void 0);
-    __decorate([
-        type_graphql_1.Field(type => type_graphql_1.Int),
-        __metadata("design:type", Number)
-    ], PartialClass.prototype, "total", void 0);
-    PartialClass = __decorate([
-        type_graphql_1.ObjectType({ isAbstract: true })
-    ], PartialClass);
-    return PartialClass;
-}
-exports.Partial = Partial;
-function CreateUpdateResult(TItemClass) {
-    let CreateUpdateResultClass = class CreateUpdateResultClass {
-    };
-    __decorate([
-        type_graphql_1.Field(type => TItemClass, { nullable: true }),
-        __metadata("design:type", Object)
-    ], CreateUpdateResultClass.prototype, "item", void 0);
-    __decorate([
-        type_graphql_1.Field(type => [Error], { nullable: true }),
-        __metadata("design:type", Array)
-    ], CreateUpdateResultClass.prototype, "errors", void 0);
-    CreateUpdateResultClass = __decorate([
-        type_graphql_1.ObjectType({ isAbstract: true })
-    ], CreateUpdateResultClass);
-    return CreateUpdateResultClass;
-}
-exports.CreateUpdateResult = CreateUpdateResult;
 let Commit = class Commit {
 };
 __decorate([
@@ -120,20 +86,6 @@ var OrderByType;
     OrderByType["desc"] = "desc";
 })(OrderByType = exports.OrderByType || (exports.OrderByType = {}));
 type_graphql_1.registerEnumType(OrderByType, { name: 'OrderByType' });
-let CreateResponse = class CreateResponse {
-};
-__decorate([
-    type_graphql_1.Field(type => type_graphql_1.ID, { nullable: true }),
-    __metadata("design:type", String)
-], CreateResponse.prototype, "id", void 0);
-__decorate([
-    type_graphql_1.Field(type => [Error], { nullable: true }),
-    __metadata("design:type", Array)
-], CreateResponse.prototype, "errors", void 0);
-CreateResponse = __decorate([
-    type_graphql_1.ObjectType()
-], CreateResponse);
-exports.CreateResponse = CreateResponse;
 let UpdateResponse = class UpdateResponse {
 };
 __decorate([

@@ -1,30 +1,4 @@
-import { ClassType, Field, Int, ObjectType, registerEnumType, ID } from "type-graphql";
-
-export function Partial<TItem>(TItemClass: ClassType<TItem>): any {
-
-  @ObjectType({ isAbstract: true })
-  abstract class PartialClass {
-    @Field(type => [TItemClass])
-    public items: TItem[];
-
-    @Field(type => Int)
-    public total: number;
-  }
-  return PartialClass;
-}
-
-export function CreateUpdateResult<TItem>(TItemClass: ClassType<TItem>): any {
-
-  @ObjectType({ isAbstract: true })
-  abstract class CreateUpdateResultClass {
-    @Field(type => TItemClass, { nullable: true })
-    public item?: TItem;
-
-    @Field(type => [Error], { nullable: true })
-    public errors?: Error[];
-  }
-  return CreateUpdateResultClass;
-}
+import { Field, Int, ObjectType, registerEnumType, ID } from "type-graphql";
 
 @ObjectType()
 export class Commit {
@@ -78,15 +52,6 @@ export enum OrderByType {
   asc = 'asc', desc = 'desc'
 }
 registerEnumType(OrderByType, { name: 'OrderByType' });
-
-@ObjectType()
-export class CreateResponse {
-  @Field(type => ID, { nullable: true })
-  public id?: string;
-
-  @Field(type => [Error], { nullable: true })
-  public errors?: Error[];
-}
 
 @ObjectType()
 export class UpdateResponse {
